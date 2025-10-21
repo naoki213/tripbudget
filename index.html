@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>旅行費用計算アプリ</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- トップバー（モバイルでの使いやすさ優先） -->
+    <header class="topbar">
+      <div class="top-left">
+        <h1>旅行費用</h1>
+      </div>
+
+      <div class="top-right">
+        <input id="people-count" type="number" min="1" value="1" title="人数" aria-label="人数" />
+        <button id="btn-share" class="btn small" title="共有／テキスト出力">共有</button>
+        <button id="btn-copy" class="btn ghost small" title="コピー">コピー</button>
+        <button id="btn-export-json" class="btn ghost small" title="JSONエクスポート">エクスポート</button>
+        <button id="btn-import-json" class="btn ghost small" title="JSONインポート">インポート</button>
+        <input id="file-import" type="file" accept="application/json" style="display:none" />
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- 旅行一覧（モバイル横スクロール） -->
+      <section class="trip-strip" id="trip-strip">
+        <button id="btn-new-trip" class="btn-circle" title="新しい旅行を追加">＋</button>
+        <div class="trip-list" id="trip-list"></div>
+      </section>
+
+      <section class="workspace">
+        <div class="left-column">
+          <div class="card summary-card">
+            <div class="summary-top">
+              <div>
+                <h2 id="current-trip-title">旅行を選択してください</h2>
+                <p id="current-trip-date" class="muted">—</p>
+              </div>
+              <div class="summary-actions">
+                <button id="btn-add-expense" class="btn" disabled>項目を追加</button>
+                <button id="btn-export" class="btn ghost" disabled>CSV</button>
+              </div>
+            </div>
+
+            <div class="total-block">
+              <div>
+                <h3>合計</h3>
+                <p class="total-amount" id="total-amount">¥0</p>
+              </div>
+              <div class="share-small">
+                <input id="people-count-side" type="number" min="1" value="1" title="人数（分割用）" aria-label="人数（分割用）" />
+                <button id="btn-share-side" class="btn small" title="共有">共有</button>
+              </div>
+            </div>
+
+            <div class="category-breakdown" id="category-breakdown"></div>
+          </div>
+
+          <div class="card expenses-list" id="expenses-list">
+            <!-- 項目一覧 -->
+          </div>
+        </div>
+
+        <aside class="right-column">
+          <div class="card chart-card">
+            <canvas id="expense-chart" aria-label="カテゴリ別支出円グラフ" role="img"></canvas>
+          </div>
+
+          <div class="card help-card">
+            <h4>使い方</h4>
+            <ol>
+              <li>＋で旅行作成 → 旅行を選択</li>
+              <li>項目を追加して支出を記録</li>
+              <li>共有でテキスト出力／ファイル共有、インポートで別端末とデータ移行</li>
+            </ol>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <!-- モーダル：新しい旅行 -->
+  <div class="modal" id="modal-new-trip" aria-hidden="true">
+    <div class="modal-panel">
+      <h3>新しい旅行を作成</h3>
+      <label>タイトル
+        <input id="trip-title-input" type="text" placeholder="例: 沖縄旅行 2025" />
+      </label>
+      <label>日付（任意）
+        <input id="trip-date-input" type="date" />
+      </label>
+      <div class="modal-actions">
+        <button id="create-trip-confirm" class="btn">作成</button>
+        <button id="create-trip-cancel" class="btn ghost">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- モーダル：新しい費用項目 -->
+  <div class="modal" id="modal-new-expense" aria-hidden="true">
+    <div class="modal-panel">
+      <h3>費用を追加</h3>
+
+      <label>カテゴリ
+        <select id="expense-category">
+          <option value="交通費">交通費</option>
+          <option value="食費">食費</option>
+          <option value="観光">観光</option>
+          <option value="宿泊">宿泊</option>
+          <option value="その他">その他</option>
+        </select>
+      </label>
+
+      <label>内容
+        <input id="expense-desc" type="text" placeholder="例: 新幹線 / 昼食 / ホテル" />
+      </label>
+
+      <label>金額（円）
+        <input id="expense-amount" inputmode="numeric" pattern="[0-9]*" type="number" min="0" placeholder="0" />
+      </label>
+
+      <div class="modal-actions">
+        <button id="create-expense-confirm" class="btn">追加</button>
+        <button id="create-expense-cancel" class="btn ghost">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トースト -->
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
